@@ -14,23 +14,27 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download unsigned app zip from release
         env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p dist
 
           gh release download "${{ github.event.release.tag_name }}" \
             --repo "${{ github.repository }}" \
-            --pattern "*-unsigned.zip" \
+            --pattern "*unsigned*.zip" \
             --dir dist
 
           ls -la dist
+
       - name: Unzip app
         run: |
+          mkdir -p unsigned
           unzip dist/*unsigned*.zip -d unsigned
-          find unsigned -name "*.app" -maxdepth 2
+          find unsigned -maxdepth 3 -name "*.app"
 
       - name: Import Apple certificate
         env:
@@ -56,7 +60,7 @@ jobs:
         env:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: |
-          APP_PATH=$(find unsigned -name "*.app" -maxdepth 2 | head -n 1)
+          APP_PATH=$(find unsigned -maxdepth 3 -name "*.app" | head -n 1)
 
           codesign --force --deep --options runtime \
             --sign "$APPLE_SIGNING_IDENTITY" \
@@ -66,7 +70,7 @@ jobs:
 
       - name: Zip signed app for notarization
         run: |
-          APP_PATH=$(find unsigned -name "*.app" -maxdepth 2 | head -n 1)
+          APP_PATH=$(find unsigned -maxdepth 3 -name "*.app" | head -n 1)
           ditto -c -k --keepParent "$APP_PATH" signed-app.zip
 
       - name: Notarize app
@@ -83,7 +87,7 @@ jobs:
 
       - name: Staple app
         run: |
-          APP_PATH=$(find unsigned -name "*.app" -maxdepth 2 | head -n 1)
+          APP_PATH=$(find unsigned -maxdepth 3 -name "*.app" | head -n 1)
           xcrun stapler staple "$APP_PATH"
           xcrun stapler validate "$APP_PATH"
 
@@ -91,7 +95,7 @@ jobs:
         env:
           APP_NAME: HanyPortfolio
         run: |
-          APP_PATH=$(find unsigned -name "*.app" -maxdepth 2 | head -n 1)
+          APP_PATH=$(find unsigned -maxdepth 3 -name "*.app" | head -n 1)
 
           hdiutil create \
             -volname "$APP_NAME" \
@@ -110,9 +114,10 @@ jobs:
 
       - name: Upload final DMG to release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           APP_NAME: HanyPortfolio
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
             "$APP_NAME.dmg" \
+            --repo "${{ github.repository }}" \
             --clobber
