@@ -1,0 +1,11 @@
+/* Button title for opening the bundled PDF */
+"open_pdf_button" = "Open English PDF";
+
+/* Main title on the welcome screen */
+"welcome_title" = "Welcome to Aurora Studio";
+
+/* Description text */
+"welcome_description" = "A beautiful macOS app built with Tauri.";
+
+/* Peer Online Status */
+"peer.status.online" = "";

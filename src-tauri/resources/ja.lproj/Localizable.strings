@@ -1,0 +1,8 @@
+/* Button title for opening the bundled PDF */
+"open_pdf_button" = "Open Japanese PDF";
+
+/* Main title on the welcome screen */
+"welcome_title" = "Aurora Studio";
+
+/* Description text */
+"welcome_description" = "A beautiful macOS app built with Tauri.";
