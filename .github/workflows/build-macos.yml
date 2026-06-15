@@ -12,6 +12,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - name: Download unsigned app zip from release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
