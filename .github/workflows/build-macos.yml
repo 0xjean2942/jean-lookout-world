@@ -14,15 +14,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: Download unsigned app zip from release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          mkdir -p dist
+
           gh release download "${{ github.event.release.tag_name }}" \
-            --pattern "*unsigned*.zip" \
+            --repo "${{ github.repository }}" \
+            --pattern "*-unsigned.zip" \
             --dir dist
 
+          ls -la dist
       - name: Unzip app
         run: |
           unzip dist/*unsigned*.zip -d unsigned
